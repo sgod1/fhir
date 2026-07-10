@@ -1,0 +1,196 @@
+swagger: '2.0'
+info:
+  title: fhir
+  x-ibm-name: fhir
+  version: 1.0.0
+x-ibm-configuration:
+  cors:
+    enabled: false
+  gateway: datapower-api-gateway
+  type: rest
+  phase: realized
+  enforced: true
+  testable: true
+  assembly:
+    execute:
+      - gatewayscript:
+          version: 2.0.0
+          title: get request parameters
+          source: >+
+            let grant_type =
+            context.get('request.parameters.grant_type.values[0]');
+
+            let scope = context.get('request.parameters.scope.values[0]');
+
+            let client_assertion_type =
+            context.get('request.parameters.client_assertion_type.values[0]');
+
+            let client_assertion =
+            context.get('request.parameters.client_assertion.values[0]');
+
+
+            console.error(grant_type, scope, client_assertion_type,
+            client_assertion);
+
+
+            context.set('fhir.client_assertion', client_assertion);
+
+      - jwt-validate:
+          version: 2.0.0
+          title: decode claims
+          jwt: fhir.client_assertion
+          output-claims: decoded.claims
+      - gatewayscript:
+          version: 2.0.0
+          title: get client public key
+          source: |
+            const claims = context.get('decoded.claims');
+
+            const iss = claims.iss;
+            const subject = claims.subj;
+
+            // check iss and sub
+
+            const client_id = iss;
+
+            // get public key by client_id
+
+            // set client public key
+            context.set('client.certobj', 'healthco_client_2');
+      - jwt-validate:
+          version: 2.0.0
+          title: validate jwt signature
+          jwt: fhir.client_assertion
+          output-claims: validated.claims
+          jws-crypto: $(client.certobj)
+      - gatewayscript:
+          version: 2.0.0
+          title: validate claims
+          source: |
+            console.error('validating claims');
+      - gatewayscript:
+          version: 2.0.0
+          title: check one-time use
+          source: |
+            const dm=require('distributed-metadata');
+
+            let decoded_claims = context.get('decoded.claims');
+
+            console.error(decoded_claims);
+
+            let gti = decoded_claims.jti
+
+            const var_name = 'var://dist/fhir/' + gti;
+
+            // this is just for testing...
+            // should be another way around
+            // get, if undefined, set; otherwise reject
+
+            dm.setVariable(var_name, gti,
+              function(error,result) {
+                if( !error) {
+                  console.error('setVariable result = ' + result);
+
+            dm.getVariable(var_name,
+              function(error,result) {
+                if( !error) {
+                  console.error('getVariable result = ' + result);
+                  } else {
+                    console.error('getVariable error = ' + error);
+                  }
+              });
+
+                  } else {
+                    console.error('setVariable error = ' + error);
+                  }
+              });
+      - gatewayscript:
+          version: 2.0.0
+          title: access token vars
+          source: "console.error('generating access token');\n\n\nconst at_hdr = {\"typ\":\"at+JWT\", \"alg\":\"RS256\",\"kid\":\"1\"};\n\nconst at_claims = {\n\t\"client_id\": \"1234\",\n\t\"scope\": \"scope\"\n};\n\ncontext.set('at.iss', 'https://dp.com');\ncontext.set('at.sub', 'sub');\ncontext.set('at.aud', 'aud');\n\ncontext.set('at.claims', at_claims);\n"
+      - jwt-generate:
+          version: 2.1.0
+          title: generate access token
+          jwt: generated.jwt
+          iss-claim: at.iss
+          exp-claim: 3600
+          sub-claim: at.sub
+          aud-claim: at.aud
+          private-claims: at.claims
+          jws-alg: RS256
+          jws-crypto: healthco_client_2
+          custom-kid-value-jws: '1234567890'
+          jwe-enc: A128CBC-HS256
+          jwe-crypto: healthco_client_2
+          jwe-alg: RSA1_5
+      - gatewayscript:
+          version: 2.0.0
+          title: set response
+          source: |
+            console.error('setting response');
+
+            const atok = context.get('generated.jwt');
+
+            console.error(atok);
+
+            const resp = {
+              "token_type": "Bearer",
+              "scope": "scope",
+              "expires_in": 3600,
+              "access_token": atok.substring(7)
+            };
+
+            context.set('message.body', resp);
+  properties:
+    target-url:
+      value: http://example.com/operation-name
+      description: The URL of the target service
+      encoded: false
+  activity-log:
+    enabled: true
+    success-content: activity
+    error-content: payload
+basePath: /fhir
+paths:
+  /token:
+    parameters: []
+    post:
+      responses:
+        '200':
+          description: success
+          schema:
+            type: object
+            properties:
+              token_type:
+                type: string
+              scope:
+                type: string
+              expires_in:
+                type: integer
+              access_token:
+                type: string
+      summary: post client assertion to token endpoint
+      operationId: post_client_assertion
+      produces:
+        - application/json
+      consumes:
+        - application/x-www-form-urlencoded
+      parameters:
+        - name: grant_type
+          required: true
+          in: formData
+          type: string
+        - name: scope
+          required: true
+          in: formData
+          type: string
+        - name: client_assertion_type
+          required: true
+          in: formData
+          type: string
+        - name: client_assertion
+          required: true
+          in: formData
+          type: string
+schemes:
+  - https

@@ -80,30 +80,45 @@ x-ibm-configuration:
 
             let gti = decoded_claims.jti
 
+            // add client id or app name to var name
             const var_name = 'var://dist/fhir/' + gti;
 
-            // this is just for testing...
-            // should be another way around
-            // get, if undefined, set; otherwise reject
+            let var_opts = {
+              name: var_name,
+              useDomain: true,
+              useOrg: false,
+              useCatalog: false,
+              setExclusive: false,
+              expire: 600
+            };
 
-            dm.setVariable(var_name, gti,
-              function(error,result) {
-                if( !error) {
-                  console.error('setVariable result = ' + result);
+            dm.getVariable(var_name, function(error, result) {
+              if (!error) {
+                if (result === undefined) {
 
-            dm.getVariable(var_name,
-              function(error,result) {
-                if( !error) {
-                  console.error('getVariable result = ' + result);
-                  } else {
-                    console.error('getVariable error = ' + error);
-                  }
-              });
+                  // no token
+                  // pass options
+                  dm.setVariable(var_opts, function(error, result) {
+                    if (!error) {
+                      // set flag ok
 
-                  } else {
-                    console.error('setVariable error = ' + error);
-                  }
-              });
+                    } else {
+                      // set var error
+                      console.error('setVariable error = ' + error);
+                    }
+                  });
+
+                } else {
+                  // token reuse, reject
+                  console.error('token reuse ' + var_name);
+
+                  // set flag reject
+                }
+              } else {
+                // get var error
+                console.error('getVariable error = ' + error);
+              }
+            });
       - gatewayscript:
           version: 2.0.0
           title: access token vars

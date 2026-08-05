@@ -96,14 +96,14 @@ x-ibm-configuration:
               if (!error) {
                 if (result === undefined) {
 
-                  // no token
-                  // pass options
+                  // no token, pass options
                   dm.setVariable(var_opts, function(error, result) {
                     if (!error) {
-                      // set flag ok
+                      // set gti.status flag
+                      context.set('gti.status', 'ok');
 
                     } else {
-                      // set var error
+                      // set-var error
                       console.error('setVariable error = ' + error);
                     }
                   });
@@ -112,10 +112,11 @@ x-ibm-configuration:
                   // token reuse, reject
                   console.error('token reuse ' + var_name);
 
-                  // set flag reject
+                  // set gti.status flag
+                  context.set('gti.status', 'reuse');
                 }
               } else {
-                // get var error
+                // get-var error
                 console.error('getVariable error = ' + error);
               }
             });

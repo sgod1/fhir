@@ -99,8 +99,8 @@ x-ibm-configuration:
                   // no token, pass options
                   dm.setVariable(var_opts, function(error, result) {
                     if (!error) {
-                      // set gti.status flag
-                      context.set('gti.status', 'ok');
+                      // set gti_status flag
+                      context.set('fhir.gti_status', 'ok');
 
                     } else {
                       // set-var error
@@ -112,8 +112,8 @@ x-ibm-configuration:
                   // token reuse, reject
                   console.error('token reuse ' + var_name);
 
-                  // set gti.status flag
-                  context.set('gti.status', 'reuse');
+                  // set gti_status flag
+                  context.set('fhir.gti_status', 'reuse');
                 }
               } else {
                 // get-var error

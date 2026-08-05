@@ -105,6 +105,7 @@ x-ibm-configuration:
                     } else {
                       // set-var error
                       console.error('setVariable error = ' + error);
+                      context.reject();
                     }
                   });
 
@@ -118,6 +119,7 @@ x-ibm-configuration:
               } else {
                 // get-var error
                 console.error('getVariable error = ' + error);
+                context.reject();
               }
             });
       - gatewayscript:

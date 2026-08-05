@@ -97,7 +97,7 @@ x-ibm-configuration:
                 if (result === undefined) {
 
                   // no token, pass options
-                  dm.setVariable(var_opts, function(error, result) {
+                  dm.setVariable(var_opts, gti, function(error, result) {
                     if (!error) {
                       // set gti_status flag
                       context.set('fhir.gti_status', 'ok');
@@ -116,6 +116,7 @@ x-ibm-configuration:
                   // set gti_status flag
                   context.set('fhir.gti_status', 'reuse');
                 }
+
               } else {
                 // get-var error
                 console.error('getVariable error = ' + error);

@@ -99,7 +99,7 @@ x-ibm-configuration:
                 if (error.errorCode === '0x858000db') {
                     // no token, pass options to set variable
                     // set value to current timestamp
-                    var_opts.value = gti;
+                    var_opts.value = Date.now();
 
                     dm.setVariable(var_opts, function(error, result) {
                       if (!error) {

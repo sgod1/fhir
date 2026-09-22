@@ -78,7 +78,7 @@ x-ibm-configuration:
 
             console.error(decoded_claims);
 
-            let gti = decoded_claims.jti
+            let gti = decoded_claims.jti;
 
             // add client id or app name to var name
             const var_name = 'var://dist/fhir/' + gti;

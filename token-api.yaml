@@ -100,8 +100,8 @@ x-ibm-configuration:
                       // set-var error
                       console.error('setVariable error = ' + error);
                       context.reject();
-                      }
-                    });
+                    }
+                  });
                 } 
                 else {
                   // get-var generic error

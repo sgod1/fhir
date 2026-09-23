@@ -89,32 +89,33 @@ x-ibm-configuration:
             };
 
             dm.getVariable(var_name, function(error, result) {
-                if (error) {
-                    if (error.errorCode === '0x858000db') {
-                        dm.setVariable(var_opts, function(error, result) {
-                            if (!error) {
-                                // set gti status flag
-                                context.set('fhir.gti_status', 'ok');
-                            } else {
-                                // set-var error
-                                console.error('setVariable error = ' + error);
-                                context.reject();
-                            }
-                        });
+              if (error) {
+                if (error.errorCode === '0x858000db') {
+                  dm.setVariable(var_opts, function(error, result) {
+                    if (!error) {
+                      // set gti status flag
+                      context.set('fhir.gti_status', 'ok');
+                    } 
+                    else {
+                      // set-var error
+                      console.error('setVariable error = ' + error);
+                      context.reject();
+                      }
+                    });
+                } 
+                else {
+                  // get-var generic error
+                  console.error('getVariable error = ' + error);
+                  context.reject();
+                }
+              } 
+              else {
+                // token reuse, reject
+                console.error('token reuse ' + var_name);
 
-                    } else {
-                        // get-var generic error
-                        console.error('getVariable error = ' + error);
-                        context.reject();
-                    }
-
-                  } else {
-                      // token reuse, reject
-                      console.error('token reuse ' + var_name);
-
-                      // set gti_status flag
-                      context.set('fhir.gti_status', 'reuse');
-                  }
+                // set gti_status flag
+                context.set('fhir.gti_status', 'reuse');
+              }
             });
       - gatewayscript:
           version: 2.0.0

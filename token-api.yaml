@@ -83,6 +83,7 @@ x-ibm-configuration:
               useDomain: true,
               useOrg: false,
               useCatalog: false,
+              readLocal: false,
               setExclusive: false,
               expire: 600,
               value: Date.now()

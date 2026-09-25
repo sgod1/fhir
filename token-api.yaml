@@ -88,25 +88,25 @@ x-ibm-configuration:
               value: Date.now()
             };
 
-            dm.getVariable(var_name, function(error, result) {
-              if (error) {
-                if (error.errorCode === '0x858000db') {
-                  dm.setVariable(var_opts, function(error, result) {
-                    if (!error) {
+            dm.getVariable(var_name, function(err, result) {
+              if (err) {
+                if (err.errorCode === '0x858000d7') {
+                  dm.setVariable(var_opts, function(err, result) {
+                    if (!err) {
                       // set gti status flag
                       context.set('fhir.gti_status', 'ok');
                     } 
                     else {
                       // set-var error
-                      console.error('setVariable error = ' + error);
-                      context.reject();
+                      console.error('setVariable error = ' + err.errorCode);
+                      context.reject('dm-set-var', err.errorCode);
                     }
                   });
                 } 
                 else {
                   // get-var generic error
-                  console.error('getVariable error = ' + error);
-                  context.reject();
+                  console.error('getVariable error = ' + err.errorCode);
+                  context.reject('dm-get-var', err.errorCode);
                 }
               } 
               else {

@@ -86,12 +86,12 @@ x-ibm-configuration:
               readLocal: false,
               setExclusive: false,
               expire: 600,
-              value: Date.now()
+              value: String(Date.now())
             };
 
-            dm.getVariable(var_name, function(err, result) {
+            dm.getVariable(var_opts, function(err, result) {
               if (err) {
-                if (err.errorCode === '0x858000d7') {
+                if (err.errorCode === '0x858000db') {
                   dm.setVariable(var_opts, function(err, result) {
                     if (!err) {
                       // set gti status flag
